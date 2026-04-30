@@ -1,0 +1,205 @@
+{
+  "project": {
+    "name": "Gym Analytics Management API",
+    "version": "1.0.0",
+    "architecture": "monolith",
+    "style": "REST",
+    "language": "Python"
+  },
+
+  "tech_stack": {
+    "framework": "FastAPI",
+    "orm": "SQLAlchemy",
+    "database": "SQLite",
+    "testing": "pytest",
+    "api_docs": "OpenAPI"
+  },
+
+  "entities": {
+    "User": {
+      "fields": {
+        "id": "integer (primary key)",
+        "email": "string (unique, required)",
+        "password": "string (hashed, required)",
+        "role": "enum (TRAINEE, TRAINER)",
+        "is_active": "boolean (default: true)",
+        "created_at": "datetime"
+      }
+    },
+
+    "TrainerAssignment": {
+      "fields": {
+        "id": "integer (primary key)",
+        "trainee_id": "foreign key -> User(id)",
+        "trainer_id": "foreign key -> User(id)"
+      }
+    },
+
+    "Activity": {
+      "fields": {
+        "id": "integer (primary key)",
+        "user_id": "foreign key -> User(id)",
+        "duration_minutes": "integer (required, > 0)",
+        "activity_type": "string (required)",
+        "date": "date (required)"
+      }
+    }
+  },
+
+  "relationships": [
+    {
+      "type": "many_to_many",
+      "from": "User (TRAINEE)",
+      "to": "User (TRAINER)",
+      "through": "TrainerAssignment"
+    },
+    {
+      "type": "one_to_many",
+      "from": "User",
+      "to": "Activity"
+    }
+  ],
+
+  "features": {
+    "authentication": {
+      "enabled": true,
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "description": "Register a new user",
+          "body": ["email", "password", "role"]
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "description": "Authenticate user",
+          "body": ["email", "password"]
+        }
+      ]
+    },
+
+    "user_management": {
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/users",
+          "description": "Get all users"
+        },
+        {
+          "method": "PUT",
+          "path": "/users/{id}",
+          "description": "Update user information"
+        },
+        {
+          "method": "PATCH",
+          "path": "/users/{id}/activate",
+          "description": "Activate or deactivate user",
+          "body": ["is_active"]
+        }
+      ]
+    },
+
+    "trainer_assignment": {
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/assignments",
+          "description": "Assign trainer to trainee",
+          "body": ["trainee_id", "trainer_id"]
+        },
+        {
+          "method": "GET",
+          "path": "/assignments",
+          "description": "List assignments"
+        }
+      ]
+    },
+
+    "activity_logging": {
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/activities",
+          "description": "Log new activity",
+          "body": ["user_id", "duration_minutes", "activity_type", "date"]
+        },
+        {
+          "method": "GET",
+          "path": "/activities",
+          "description": "Get activities (with optional filters)"
+        }
+      ]
+    },
+
+    "analytics": {
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/analytics/trainer-load",
+          "description": "Total weekly duration per trainer"
+        },
+        {
+          "method": "GET",
+          "path": "/analytics/user-summary",
+          "description": "Activity count and average duration per user"
+        },
+        {
+          "method": "GET",
+          "path": "/analytics/trainer-ranking",
+          "description": "Ranking of trainers by total activity duration"
+        }
+      ]
+    }
+  },
+
+  "business_rules": [
+    "User email must be unique",
+    "User role must be either TRAINEE or TRAINER",
+    "Inactive users cannot log activities",
+    "Activity duration must be greater than 0",
+    "Activity date cannot be in the future",
+    "Trainer assignment must link a TRAINEE to a TRAINER",
+    "A user must exist before creating activities",
+    "Metrics must be computed dynamically from activities"
+  ],
+
+  "validations": {
+    "email": "must be valid email format",
+    "password": "minimum length 6",
+    "duration_minutes": "integer > 0",
+    "date": "must not be future date"
+  },
+
+  "analytics_rules": {
+    "trainer_load": "sum of duration_minutes grouped by trainer per week",
+    "user_summary": {
+      "total_activities": "count of activities per user",
+      "average_duration": "average duration_minutes per user"
+    },
+    "trainer_ranking": "trainers ordered by total activity duration descending"
+  },
+
+  "testing": {
+    "unit_tests": true,
+    "integration_tests": true,
+    "coverage_target": 0.8,
+    "required_cases": [
+      "successful user registration",
+      "duplicate email rejection",
+      "login success and failure",
+      "activity creation success",
+      "activity creation with invalid date",
+      "inactive user cannot create activity",
+      "trainer assignment validation",
+      "analytics endpoints return correct aggregation"
+    ]
+  },
+
+  "non_functional_requirements": {
+    "api_response_format": "JSON",
+    "error_handling": "standard HTTP status codes",
+    "documentation": "auto-generated OpenAPI",
+    "deployment": "local environment runnable"
+  }
+}
