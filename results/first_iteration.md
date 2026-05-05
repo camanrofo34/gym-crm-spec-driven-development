@@ -95,5 +95,4 @@ on the next iterations made, plus evaluating the impact of the AI on the origina
 ## Postscript:
 
 It was awesome to watch that the AI agent was able to create a REST API with the requirements and also didn't consume any
-percentage of the weekly tokens, as for comparitions, only to change a slot generation endpoint of the work, it consumed almost the
-half of the weekly tokens.
+percentage of the weekly tokens; as for comparisons, only to change a slot generation endpoint of the work, it consumed almost half of the weekly tokens.
